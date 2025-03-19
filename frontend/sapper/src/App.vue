@@ -1,7 +1,4 @@
 <script setup>
-import GameCard from './components/GameCard/index.vue';
-import LeadershipCard from './components/LeadershipCard/index.vue';
-import SettingsCard from './components/SettingsCard/index.vue';
 import { useUserStore } from './store.js';
 
 const useStore = useUserStore();

@@ -5,13 +5,14 @@ export const useUserStore = defineStore('user', {
     const savedUser = localStorage.getItem('user');
     return savedUser
     ? JSON.parse(savedUser)
-    : {
+    : 
+     {
       difficulty: '',
-      cells: {},
+      cells: [],
       columns: '',
       rows:'',
       mines: '',
-      gameStatus:''
+      gameStatus: ''
     };
   },
   actions: {
@@ -19,24 +20,10 @@ export const useUserStore = defineStore('user', {
       localStorage.setItem('user', JSON.stringify(this.$state));
     },
 
-    setBombs(){
-      const max = this.rows * this.columns
-      const uniqueIndex = new Set();
-      for (let i=0; i < this.mines; i++){
-        while(uniqueIndex.size < this.mines){
-          const randomIndex = Math.floor(Math.random() * max);
-          uniqueIndex.add(randomIndex);
-        }
-        uniqueIndex.forEach(item => {
-          this.cells[item].bomb = 'BOMB'
-        })
-      }
-    },
-
-    setDifficulty(boxes, difficulty){
-      this.difficulty = difficulty
-      this.initCellsValue(boxes)
-      switch(difficulty){
+    setDifficulty(boxes, difficul){
+      this.initCells(boxes)
+      this.difficulty = difficul
+      switch(difficul){
         case 'easy':
           this.columns = 8
           this.rows = 8
@@ -53,19 +40,30 @@ export const useUserStore = defineStore('user', {
           this.mines = 100
           break
       }
-      this.setBombs()
-      this.saveToLocalStorage();
-    },
+      this.saveToLocalStorage()
 
-    initCellsValue(item){
-      this.cells = Array(item).fill(null).map(() => ({ value: '', bomb: '', flag: '', danger: ''}))
-      this.saveToLocalStorage();
+      
+    },
+    initCells(boxes){
+      this.cells = Array(boxes).fill(null).map(() => ({ value: '', bomb: '', flag: '', danger: ''}))
+    },
+    setBombs(){
+      const max = this.rows * this.columns
+      const uniqueIndex = new Set();
+      for (let i=0; i < this.mines; i++){
+        while(uniqueIndex.size < this.mines){
+          const randomIndex = Math.floor(Math.random() * max);
+          uniqueIndex.add(randomIndex);
+        }
+        uniqueIndex.forEach(item => {
+          this.cells[item].bomb = 'BOMB'
+        })
+      }
+      this.saveToLocalStorage()
     },
 
     findIndex(rowIndex, colIndex){
-      this.saveToLocalStorage();
       return(rowIndex * this.columns + colIndex)
-      
     },
 
     chekDanger(rowIndex, colIndex){
@@ -81,7 +79,6 @@ export const useUserStore = defineStore('user', {
         { row: (rowIndex - 1), col: colIndex + 1 }
       ];
       const filteredDangerPlace = dangerPlace.filter(item => item.row >= 0 && item.row < this.rows && item.col >= 0 && item.col < this.columns);
-      console.log(filteredDangerPlace)
       filteredDangerPlace.forEach(item => {
         const data = this.findIndex(item['row'], item['col']);
         if(this.cells[data]?.bomb){
@@ -91,17 +88,27 @@ export const useUserStore = defineStore('user', {
         })
       const cage = this.findIndex(rowIndex, colIndex)
       this.cells[cage].danger = counter
-      this.saveToLocalStorage();
+      this.saveToLocalStorage()
+
     },
     
-    setDangerPlace(rowIndex, colIndex){
+    checkDangerPlace(rowIndex, colIndex){
       this.cells[this.findIndex(rowIndex, colIndex)].value = '0'
       this.chekDanger(rowIndex, colIndex)
-      this.saveToLocalStorage();
+      this.saveToLocalStorage()
+
     },
-    cleanStore(){
+    cleanStore() {
+      // Очищаем состояние хранилища
       this.difficulty = '';
+      this.cells = [];
+      this.columns = 0;
+      this.rows = 0;
+      this.mines = 0;
       this.gameStatus = '';
-    }
+
+      // Очищаем localStorage
+      localStorage.removeItem('userState'); // Удаляем данные из localStorage
+    },
   },
 });

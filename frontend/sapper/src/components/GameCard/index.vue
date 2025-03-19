@@ -6,17 +6,17 @@
         <div class="flags-counter">🚩 Флажки: 10</div>
       </div>
       <div class="actions">
-        <router-link to="/" class="btn restart-btn" @click="useStore.cleanStore()">🔄 Перезапуск</router-link>
+        <button class="btn restart-btn" @click="restartGame">🔄 Перезапуск</button>
         <router-link to="/" class="btn settings-btn">⚙️ Настройки</router-link>
       </div>
     </header>
     <main>
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div v-if="useStore.gameStatus" class="loser">
+        <div v-if="useStore.gameStatus == 'lose'" class="loser">
             LOSER
         </div>
-        <div v-for="(row, rowIndex) in Array(useStore.rows || 8).fill(0)"  :style="{display: 'flex', flexDirection: 'row'}">
-          <div v-for="(cell, colIndex) in Array(useStore.columns || 8).fill(0)" class="cell" @click="selectPlace(rowIndex, colIndex)" >
+        <div v-for="(row, rowIndex) in Array(useStore.rows).fill(0)"  :style="{display: 'flex', flexDirection: 'row'}">
+          <div v-for="(cell, colIndex) in Array(useStore.columns).fill(0)" class="cell" @click="openCage(rowIndex, colIndex)" >
             {{ checkPlace(rowIndex, colIndex) }}
           </div>
         </div>
@@ -25,64 +25,67 @@
   </div>
 </template>
 <script setup>
-
-import { ref } from 'vue';
-import { useUserStore } from '../../store.js';
-import { onMounted } from 'vue';
-
-const useStore = useUserStore();
-
-onMounted(() => {
-  if(!useStore.difficulty){
-    useStore.setDifficulty(8,'easy')
-  }
-})
-const handleRestart = () => {
+  import { useUserStore } from '../../store.js';
+  import { onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { nextTick } from 'vue';
+  const router = useRouter();
+  const useStore = useUserStore();
+  
+  onMounted(() => {
+    useStore.setBombs()
+  })
+  function restartGame() {
   // Очищаем хранилище
-  useStore.cleanStore();
+    useStore.cleanStore();
+    // Переходим на главную страницу
+    nextTick(() => {
+    // Переходим на главную страницу
+    router.push('/');
+  });
+}
+ 
+ 
+  const openCage = (rowIndex, colIndex) => { //Смотрим клетку
+    if(useStore.gameStatus){
+      return
+    }
+    console.log(useStore.gameStatus)
+    useStore.checkDangerPlace(rowIndex, colIndex) //Просматриваем  клетку, присваимваем ей value 0 и отправляем далее проверять danger клетки.
+  };
 
-  // Переходим на главную страницу
-  router.push('/');
-};
-
-const selectPlace = (rowIndex, colIndex) => { //Выбор клетки
-  if(useStore.gameStatus){
-    return
+  function checkPlace(rowIndex, colIndex){ // выводим значения клеток
+    if(this.checkValue(rowIndex, colIndex) && this.checkBomb(rowIndex, colIndex)){
+      useStore.gameStatus = 'lose'
+      return checkBomb(rowIndex, colIndex)
+    } else if(this.checkValue(rowIndex, colIndex) && this.checkDanger(rowIndex, colIndex)){
+      return checkDanger(rowIndex, colIndex)
+    } else {return checkValue(rowIndex, colIndex)}
   }
-  useStore.setDangerPlace(rowIndex, colIndex)
-};
-function checkPlace(rowIndex, colIndex){
-  if(this.checkValue(rowIndex, colIndex) && this.checkBomb(rowIndex, colIndex)){
-    useStore.gameStatus = 'Lose'
+
+  function checkBomb(rowIndex, colIndex){ //Проверка есть ли бомба
     return useStore.cells[useStore.findIndex(rowIndex, colIndex)].bomb
-  } else if(this.checkValue(rowIndex, colIndex) && this.checkDanger(rowIndex, colIndex)){
+  };
+  function checkValue(rowIndex, colIndex){ //Проверка открыта ли ячейка
+    return useStore.cells[useStore.findIndex(rowIndex, colIndex)].value
+  };
+  function checkDanger(rowIndex, colIndex){
     return useStore.cells[useStore.findIndex(rowIndex, colIndex)].danger
-} else {return useStore.cells[useStore.findIndex(rowIndex, colIndex)].value}
-}
-
-function checkBomb(rowIndex, colIndex){ //Проверка есть ли бомба
-  return useStore.cells[useStore.findIndex(rowIndex, colIndex)].bomb
-};
-function checkValue(rowIndex, colIndex){ //Проверка открыта ли ячейка
-  return useStore.cells[useStore.findIndex(rowIndex, colIndex)].value
-};
-function checkDanger(rowIndex, colIndex){
-  return useStore.cells[useStore.findIndex(rowIndex, colIndex)].danger
-}
-
-function getGameDifficulty() {
-  switch (useStore.difficulty) {
-    case 'easy':
-      return 'game-container-easy-medium'
-      break;
-    case 'medium':
-      return 'game-container-easy-medium'
-      break;
-    case 'hard':
-      return 'game-container-hard'
-      break;
   }
-}
+
+  function getGameDifficulty() {
+    switch (useStore.difficulty) {
+      case 'easy':
+        return 'game-container-easy-medium'
+        break;
+      case 'medium':
+        return 'game-container-easy-medium'
+        break;
+      case 'hard':
+        return 'game-container-hard'
+        break;
+    }
+  }
 </script>
 
 <style scoped>

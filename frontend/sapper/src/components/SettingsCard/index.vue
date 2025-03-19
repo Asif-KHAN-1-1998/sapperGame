@@ -2,13 +2,13 @@
   <div class="settings">
     <h1>Выберите уровень сложности</h1>
     <div class="difficulty-options">
-      <button @click="selectDifficulty(64, 'easy')" class="btn easy">
+      <button @click="useStore.setDifficulty(64, 'easy')" class="btn easy">
         Простой (8x8, 10 мин)
       </button>
-      <button @click="selectDifficulty(256, 'medium')" class="btn medium">
+      <button @click="useStore.setDifficulty(256, 'medium')" class="btn medium">
         Средний (16x16, 40 мин)
       </button>
-      <button @click="selectDifficulty(512, 'hard')" class="btn hard">
+      <button @click="useStore.setDifficulty(512, 'hard')" class="btn hard">
         Сложный (32x16, 100 мин)
       </button>
     </div>
@@ -23,15 +23,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useUserStore } from '../../store.js';
-
-const useStore = useUserStore();
-const message = ref('Привет, Настройка!');
-
-const selectDifficulty = (boxes, difficulty) => {
-  useStore.setDifficulty(boxes,difficulty);
-};
+  import { useUserStore } from '../../store.js';
+  import { onMounted } from 'vue';
+  const useStore = useUserStore();
+  onMounted(() => {
+      if(!useStore.difficulty){
+        console.log('worked')
+        useStore.setDifficulty(64, 'easy')
+      }
+  })
 </script>
 
 <style scoped>
