@@ -1,6 +1,6 @@
 <template>
   <div class="settings">
-    <h1>Выберите уровень сложности</h1>
+    <h1>Выберите уровень сложности {{ useStore.nickName }}</h1>
     <div class="difficulty-options">
       <button @click="useStore.setDifficulty(64, 'easy')" class="btn easy">
         Простой (8x8, 10 мин)
@@ -12,26 +12,38 @@
         Сложный (32x16, 100 мин)
       </button>
     </div>
-    <div v-if="useStore.difficulty">
+    <div style="display: flex; flex-direction: column;">
       <p class="selected-level">Выбранный уровень: {{ useStore.difficulty }}</p>
-      <router-link to="/game" class="start-game-btn">Начать игру</router-link>
-    </div>
-    <div v-else style="margin-top: 10px;">
-        ВЫБЕРИТЕ УРОВЕНЬ
+      <input class="selected-level" v-model="username">
+      <button @click="startGame()" class="start-game-btn">Начать игру</button>
     </div>
   </div>
 </template>
 
 <script setup>
   import { useUserStore } from '../../store.js';
-  import { onMounted } from 'vue';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+
+  const router = useRouter();
   const useStore = useUserStore();
+  const username = ref('');
+ 
   onMounted(() => {
-      if(!useStore.difficulty){
-        console.log('worked')
-        useStore.setDifficulty(64, 'easy')
-      }
+    useStore.setDifficulty(64, 'easy')
+    console.log(useStore.leaderBoard)
   })
+
+  const startGame = () => {
+    if (!username.value && !useStore.nickName){
+      return
+    } else {
+      useStore.setNickName(username.value)
+      useStore.setGameStatus('gaming')
+      router.push('/game');
+    }
+    
+  }
 </script>
 
 <style scoped>

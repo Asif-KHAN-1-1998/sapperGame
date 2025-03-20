@@ -9,17 +9,32 @@ export const useUserStore = defineStore('user', {
      {
       difficulty: '',
       cells: [],
-      columns: '',
-      rows:'',
-      mines: '',
-      gameStatus: ''
+      columns: 0,
+      rows: 0,
+      mines: 0,
+      openedCages: [],
+      gameStatus: '',
+      leaderBoard: [],
+      nickName:''
     };
   },
+
   actions: {
     saveToLocalStorage() {
       localStorage.setItem('user', JSON.stringify(this.$state));
     },
-
+    setNickName(value){
+      this.nickName = value
+      this.saveToLocalStorage()
+    },
+    setOpenedcages(value){
+      this.openedCages.push(value)
+      this.saveToLocalStorage()
+    },
+    setGameStatus(value){
+      this.gameStatus = value
+      this.saveToLocalStorage()
+    },
     setDifficulty(boxes, difficul){
       this.initCells(boxes)
       this.difficulty = difficul
@@ -82,7 +97,6 @@ export const useUserStore = defineStore('user', {
       filteredDangerPlace.forEach(item => {
         const data = this.findIndex(item['row'], item['col']);
         if(this.cells[data]?.bomb){
-          console.log( this.cells.indexOf(this.cells[data]))
           counter++;
         }
         })
@@ -97,6 +111,17 @@ export const useUserStore = defineStore('user', {
       this.chekDanger(rowIndex, colIndex)
       this.saveToLocalStorage()
 
+    },
+    setTime(hour, minute, second){
+      const time = (hour.value * 86400 + minute.value * 60 + second.value)
+      this.leaderBoard = []
+      if (time > 0){
+        this.leaderBoard = [...this.leaderBoard, { time: `${time}`, nick: `${this.nickName}` }];
+        this.leaderBoard = this.leaderBoard.filter(item => item !== undefined);
+        }
+      this.saveToLocalStorage()
+ 
+      
     },
     cleanStore() {
       // Очищаем состояние хранилища

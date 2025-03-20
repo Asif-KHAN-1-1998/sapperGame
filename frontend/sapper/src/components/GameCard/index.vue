@@ -2,11 +2,11 @@
   <div :class="getGameDifficulty()">
     <header class="game-header">
       <div class="controls">
-        <div class="timer">⏳ Время: 00:00</div>
-        <div class="flags-counter">🚩 Флажки: 10</div>
+        <div v-if="useStore.gameStatus == 'gaming'"  class="timer">⏳ Время: {{hours}}:{{ minutes }}:{{ seconds }}</div>
+        <div class="flags-timeCounter">🚩 Флажки: 10 {{ useStore.gameStatus }}</div>
       </div>
       <div class="actions">
-        <button class="btn restart-btn" @click="restartGame">🔄 Перезапуск</button>
+        <button class="btn restart-btn" @click="restartGame()">🔄 Перезапуск</button>
         <router-link to="/" class="btn settings-btn">⚙️ Настройки</router-link>
       </div>
     </header>
@@ -14,6 +14,9 @@
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <div v-if="useStore.gameStatus == 'lose'" class="loser">
             LOSER
+        </div>
+        <div v-if="useStore.gameStatus == 'winner'" class="loser">
+            WINNER
         </div>
         <div v-for="(row, rowIndex) in Array(useStore.rows).fill(0)"  :style="{display: 'flex', flexDirection: 'row'}">
           <div v-for="(cell, colIndex) in Array(useStore.columns).fill(0)" class="cell" @click="openCage(rowIndex, colIndex)" >
@@ -26,52 +29,77 @@
 </template>
 <script setup>
   import { useUserStore } from '../../store.js';
-  import { onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
-  import { nextTick } from 'vue';
+
   const router = useRouter();
   const useStore = useUserStore();
+
+  let delay = 1000;
+  let timeCounter = ref(0);
+  let hours = ref(0)
+  let minutes = ref(0)
+  let seconds = ref(0)
+
   
   onMounted(() => {
-    useStore.setBombs()
-  })
-  function restartGame() {
-  // Очищаем хранилище
-    useStore.cleanStore();
-    // Переходим на главную страницу
-    nextTick(() => {
-    // Переходим на главную страницу
-    router.push('/');
+    // useStore.setBombs()
   });
+
+  let timerId = setTimeout(function request() {
+       // Увеличиваем счётчик
+      hours.value = Math.floor(timeCounter.value / 3600)
+      minutes.value = Math.floor((timeCounter.value % 3600) / 60)
+      seconds.value = Math.floor(timeCounter.value % 60)
+      if(useStore.gameStatus == 'lose'){
+        return
+      } else if (useStore.gameStatus == 'winner'){
+        useStore.setTime(hours, minutes, seconds)
+        return
+      } else{
+        timeCounter.value++;
+        timerId = setTimeout(request, delay); 
+      }
+       
+    }, delay);
+
+  const openedCages = computed(() => {
+    const filteredCells = useStore.cells.filter(item => item.value === '0')
+    return filteredCells?.length
+  })
+
+
+  const restartGame = () => {
+    useStore.cleanStore();
+    router.push('/');
 }
- 
- 
+
   const openCage = (rowIndex, colIndex) => { //Смотрим клетку
-    if(useStore.gameStatus){
-      return
+    if(useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner'){
+      return 
+    } else {
+      useStore.checkDangerPlace(rowIndex, colIndex)
+      if(openedCages.value == 10){
+        useStore.setGameStatus('winner')
+      }
     }
-    console.log(useStore.gameStatus)
-    useStore.checkDangerPlace(rowIndex, colIndex) //Просматриваем  клетку, присваимваем ей value 0 и отправляем далее проверять danger клетки.
   };
 
-  function checkPlace(rowIndex, colIndex){ // выводим значения клеток
-    if(this.checkValue(rowIndex, colIndex) && this.checkBomb(rowIndex, colIndex)){
-      useStore.gameStatus = 'lose'
+  const checkPlace = (rowIndex, colIndex) => { // выводим значения клеток
+    if (checkValue(rowIndex, colIndex) && checkBomb(rowIndex, colIndex)){
+      useStore.setGameStatus('lose')
       return checkBomb(rowIndex, colIndex)
-    } else if(this.checkValue(rowIndex, colIndex) && this.checkDanger(rowIndex, colIndex)){
+    } else {      
       return checkDanger(rowIndex, colIndex)
-    } else {return checkValue(rowIndex, colIndex)}
+    }
   }
 
-  function checkBomb(rowIndex, colIndex){ //Проверка есть ли бомба
-    return useStore.cells[useStore.findIndex(rowIndex, colIndex)].bomb
-  };
-  function checkValue(rowIndex, colIndex){ //Проверка открыта ли ячейка
-    return useStore.cells[useStore.findIndex(rowIndex, colIndex)].value
-  };
-  function checkDanger(rowIndex, colIndex){
-    return useStore.cells[useStore.findIndex(rowIndex, colIndex)].danger
-  }
+  const checkBomb = (rowIndex, colIndex) =>  //Проверка есть ли бомба
+    useStore.cells[useStore.findIndex(rowIndex, colIndex)].bomb;
+  const checkValue = (rowIndex, colIndex) => //Проверка открыта ли ячейка
+    useStore.cells[useStore.findIndex(rowIndex, colIndex)].value;
+  const checkDanger = (rowIndex, colIndex) => 
+    useStore.cells[useStore.findIndex(rowIndex, colIndex)].danger;
 
   function getGameDifficulty() {
     switch (useStore.difficulty) {
@@ -85,7 +113,8 @@
         return 'game-container-hard'
         break;
     }
-  }
+  };
+
 </script>
 
 <style scoped>

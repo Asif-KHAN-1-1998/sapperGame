@@ -1,18 +1,16 @@
 <template>
   <div class="leaderboard">
-    <h1>{{ message }}</h1>
+    <h1>Таблица лидеров</h1>
     <table>
       <thead>
         <tr>
-          <th>#</th>
           <th>Имя игрока</th>
           <th>Время (сек)</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(player, index) in leaderboard" :key="index">
-          <td>{{ index + 1 }}</td>
-          <td>{{ player.name }}</td>
+        <tr v-for="(player, index) in useStore.leaderBoard" :key="index">
+          <td>{{ player.nick }}</td>
           <td>{{ player.time }}</td>
         </tr>
       </tbody>
@@ -21,19 +19,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '../../store.js';
-
-const message = ref('Таблица лидеров');
-
-// Пример данных для таблицы лидеров
-const leaderboard = ref([
-  { name: 'Игрок 1', time: 120 },
-  { name: 'Игрок 2', time: 150 },
-  { name: 'Игрок 3', time: 180 },
-  { name: 'Игрок 4', time: 200 },
-  { name: 'Игрок 5', time: 220 },
-]);
+const useStore = useUserStore()
+onMounted(() => {
+})
+// Пример данны
 </script>
 
 <style scoped>
