@@ -2,7 +2,7 @@
   <div :class="getGameDifficulty()">
     <header class="game-header">
       <div class="controls">
-        <div v-if="useStore.gameStatus == 'gaming'"  class="timer">⏳ Время: {{hours}}:{{ minutes }}:{{ seconds }}</div>
+        <div class="timer">⏳ Время: {{hours}}:{{ minutes }}:{{ seconds }}</div>
         <div class="flags-timeCounter">🚩 Флажки: 10 {{ useStore.gameStatus }}</div>
       </div>
       <div class="actions">
@@ -45,48 +45,42 @@
   onMounted(() => {
     // useStore.setBombs()
   });
-
-  let timerId = setTimeout(function request() {
-       // Увеличиваем счётчик
-      hours.value = Math.floor(timeCounter.value / 3600)
-      minutes.value = Math.floor((timeCounter.value % 3600) / 60)
-      seconds.value = Math.floor(timeCounter.value % 60)
-      if(useStore.gameStatus == 'lose'){
-        return
-      } else if (useStore.gameStatus == 'winner'){
-        useStore.setTime(hours, minutes, seconds)
-        return
-      } else{
-        timeCounter.value++;
-        timerId = setTimeout(request, delay); 
-      }
-       
-    }, delay);
-
-  const openedCages = computed(() => {
+  const openedCages = computed(() => { //Отслеживаем количество открытых ячеек
     const filteredCells = useStore.cells.filter(item => item.value === '0')
     return filteredCells?.length
   })
 
+  let timerId = setTimeout(function request() { //Секундомер
+    hours.value = Math.floor(timeCounter.value / 3600);
+    minutes.value = Math.floor((timeCounter.value % 3600) / 60);
+    seconds.value = Math.floor(timeCounter.value % 60);
+    if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') {
+      if (useStore.gameStatus === 'winner') {
+        useStore.setTime(hours, minutes, seconds);
+        return
+      }
+      return
+    }
+    timeCounter.value++;
+    timerId = setTimeout(request, delay);
+  }, delay);
 
-  const restartGame = () => {
+  const openCage = (rowIndex, colIndex) => { //Кликаем по клетке
+    if(useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') return 
+    useStore.setDangerPlace(rowIndex, colIndex)
+    if(openedCages.value == 10){
+      useStore.setGameStatus('winner')
+      }
+ 
+  };
+
+  const restartGame = () => {//перезапуск игры + очистка store, localStore
     useStore.cleanStore();
     router.push('/');
 }
 
-  const openCage = (rowIndex, colIndex) => { //Смотрим клетку
-    if(useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner'){
-      return 
-    } else {
-      useStore.checkDangerPlace(rowIndex, colIndex)
-      if(openedCages.value == 10){
-        useStore.setGameStatus('winner')
-      }
-    }
-  };
-
   const checkPlace = (rowIndex, colIndex) => { // выводим значения клеток
-    if (checkValue(rowIndex, colIndex) && checkBomb(rowIndex, colIndex)){
+    if (checkBomb(rowIndex, colIndex)){
       useStore.setGameStatus('lose')
       return checkBomb(rowIndex, colIndex)
     } else {      
@@ -96,22 +90,17 @@
 
   const checkBomb = (rowIndex, colIndex) =>  //Проверка есть ли бомба
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].bomb;
-  const checkValue = (rowIndex, colIndex) => //Проверка открыта ли ячейка
-    useStore.cells[useStore.findIndex(rowIndex, colIndex)].value;
-  const checkDanger = (rowIndex, colIndex) => 
+  const checkDanger = (rowIndex, colIndex) => //Проверка коэффициента опасности
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].danger;
 
-  function getGameDifficulty() {
+  const getGameDifficulty = () => {//Установка стиля для контейнера
     switch (useStore.difficulty) {
       case 'easy':
         return 'game-container-easy-medium'
-        break;
       case 'medium':
         return 'game-container-easy-medium'
-        break;
       case 'hard':
         return 'game-container-hard'
-        break;
     }
   };
 

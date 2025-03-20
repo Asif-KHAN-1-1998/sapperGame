@@ -8,7 +8,7 @@ const useStore = useUserStore();
   <header class="app-header">
     <nav class="navigation">
       <router-link to="/" class="nav-link">Настройки</router-link>
-      <router-link to="/game" class="nav-link">Игра</router-link>
+      <router-link v-if="useStore.gameStatus" to="/game" class="nav-link">Игра</router-link>
       <router-link to="/leadership" class="nav-link">Таблица лидеров</router-link>
     </nav>
     <p class="route-info"><strong>Текущий путь:</strong> {{ $route.fullPath }}</p>

@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useUserStore } from '../../store.js';
 const useStore = useUserStore()
 onMounted(() => {

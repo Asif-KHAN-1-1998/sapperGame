@@ -7,15 +7,17 @@ export const useUserStore = defineStore('user', {
     ? JSON.parse(savedUser)
     : 
      {
+      nickName:'',
+      gameStatus: '',
       difficulty: '',
       cells: [],
       columns: 0,
       rows: 0,
       mines: 0,
       openedCages: [],
-      gameStatus: '',
       leaderBoard: [],
-      nickName:''
+      
+      
     };
   },
 
@@ -25,39 +27,30 @@ export const useUserStore = defineStore('user', {
     },
     setNickName(value){
       this.nickName = value
-      this.saveToLocalStorage()
     },
     setOpenedcages(value){
       this.openedCages.push(value)
-      this.saveToLocalStorage()
     },
     setGameStatus(value){
       this.gameStatus = value
-      this.saveToLocalStorage()
     },
-    setDifficulty(boxes, difficul){
-      this.initCells(boxes)
-      this.difficulty = difficul
-      switch(difficul){
-        case 'easy':
-          this.columns = 8
-          this.rows = 8
-          this.mines = 10
-          break;
-        case 'medium':
-          this.columns = 16
-          this.rows = 16
-          this.mines = 40
-          break;
-        case 'hard':
-          this.columns = 32
-          this.rows = 16
-          this.mines = 100
-          break
+    setDifficulty(difficul){
+      const difficultyLevels = [
+        { name: 'easy', boxes: 64, columns: 8, rows: 8, mines: 10 },
+        { name: 'medium', boxes: 256, columns: 16, rows: 16, mines: 40 },
+        { name: 'hard', boxes: 512, columns: 32, rows: 16, mines: 100 },
+      ]
+      const level = difficultyLevels.find((lvl) => lvl.name === difficul);
+      if (!level) {
+        console.error(`Неизвестный уровень сложности: ${difficul}`);
+        return;
       }
-      this.saveToLocalStorage()
-
-      
+      this.columns = level.columns;
+      this.rows = level.rows;
+      this.mines = level.mines;
+      this.initCells(level.boxes);
+      this.difficulty = difficul;;
+       
     },
     initCells(boxes){
       this.cells = Array(boxes).fill(null).map(() => ({ value: '', bomb: '', flag: '', danger: ''}))
@@ -74,7 +67,6 @@ export const useUserStore = defineStore('user', {
           this.cells[item].bomb = 'BOMB'
         })
       }
-      this.saveToLocalStorage()
     },
 
     findIndex(rowIndex, colIndex){
@@ -102,26 +94,21 @@ export const useUserStore = defineStore('user', {
         })
       const cage = this.findIndex(rowIndex, colIndex)
       this.cells[cage].danger = counter
-      this.saveToLocalStorage()
 
     },
     
-    checkDangerPlace(rowIndex, colIndex){
+    setDangerPlace(rowIndex, colIndex){
       this.cells[this.findIndex(rowIndex, colIndex)].value = '0'
       this.chekDanger(rowIndex, colIndex)
-      this.saveToLocalStorage()
-
     },
     setTime(hour, minute, second){
       const time = (hour.value * 86400 + minute.value * 60 + second.value)
-      this.leaderBoard = []
       if (time > 0){
-        this.leaderBoard = [...this.leaderBoard, { time: `${time}`, nick: `${this.nickName}` }];
+        console.log(typeof(this.leaderBoard))
+        this.leaderBoard = [this.leaderBoard, { time: `${time}`, nick: `${this.nickName}` }];
         this.leaderBoard = this.leaderBoard.filter(item => item !== undefined);
-        }
-      this.saveToLocalStorage()
- 
-      
+        this.saveToLocalStorage
+        }  
     },
     cleanStore() {
       // Очищаем состояние хранилища
@@ -133,7 +120,7 @@ export const useUserStore = defineStore('user', {
       this.gameStatus = '';
 
       // Очищаем localStorage
-      localStorage.removeItem('userState'); // Удаляем данные из localStorage
+      localStorage.removeItem('user'); // Удаляем данные из localStorage
     },
   },
 });

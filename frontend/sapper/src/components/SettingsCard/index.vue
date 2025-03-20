@@ -2,19 +2,19 @@
   <div class="settings">
     <h1>Выберите уровень сложности {{ useStore.nickName }}</h1>
     <div class="difficulty-options">
-      <button @click="useStore.setDifficulty(64, 'easy')" class="btn easy">
+      <button @click="useStore.setDifficulty('easy')" class="btn easy">
         Простой (8x8, 10 мин)
       </button>
-      <button @click="useStore.setDifficulty(256, 'medium')" class="btn medium">
+      <button @click="useStore.setDifficulty('medium')" class="btn medium">
         Средний (16x16, 40 мин)
       </button>
-      <button @click="useStore.setDifficulty(512, 'hard')" class="btn hard">
+      <button @click="useStore.setDifficulty('hard')" class="btn hard">
         Сложный (32x16, 100 мин)
       </button>
     </div>
     <div style="display: flex; flex-direction: column;">
       <p class="selected-level">Выбранный уровень: {{ useStore.difficulty }}</p>
-      <input class="selected-level" v-model="username">
+      <input value="username..." style="text-align: center;" class="selected-level" v-model="username">
       <button @click="startGame()" class="start-game-btn">Начать игру</button>
     </div>
   </div>
@@ -30,20 +30,19 @@
   const username = ref('');
  
   onMounted(() => {
-    useStore.setDifficulty(64, 'easy')
-    console.log(useStore.leaderBoard)
+    if(!useStore.difficulty){
+      useStore.setDifficulty('easy')
+    }
+     //Устанавливаем default уровень сложности
+    console.log(localStorage);
   })
 
-  const startGame = () => {
-    if (!username.value && !useStore.nickName){
-      return
-    } else {
-      useStore.setNickName(username.value)
-      useStore.setGameStatus('gaming')
-      router.push('/game');
-    }
-    
-  }
+  const startGame = () => { //Кнопка "Начать игру" устанавливает username и дает пометку что игра началаь + роутит на страницу игры
+  if (!username.value && !useStore.nickName) return;
+  useStore.setNickName(useStore.nickName || username.value);
+  useStore.setGameStatus('gaming');
+  router.push('/game');
+};
 </script>
 
 <style scoped>
