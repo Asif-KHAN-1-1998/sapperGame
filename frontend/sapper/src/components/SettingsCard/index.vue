@@ -40,6 +40,10 @@
     if(!useStore.difficulty){
       useStore.setDifficulty('easy')
     }
+    if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'win') {
+      useStore.cleanStore();
+      useStore.setDifficulty('easy')
+    }
   })
 
   const startGame = () => { //Кнопка "Начать игру" устанавливает username и дает пометку что игра началаь + роутит на страницу игры
