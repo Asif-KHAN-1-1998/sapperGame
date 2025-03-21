@@ -17,7 +17,7 @@
       <p class="selected-level">Выбранный уровень: {{ useStore.difficulty }}</p>
       <input placeholder="username..." style="text-align: center;" class="input-username" v-model="username">
       <div style="color:red; margin-top: 1rem;" v-if="useStore.usernameError == true">Заполните поле username</div>
-      <button @click="startGame()" class="start-game-btn"> Начать игру</button>
+      <button>@click="startGame()" class="start-game-btn"> Начать игру</button>
 
     </div>
   </div>
