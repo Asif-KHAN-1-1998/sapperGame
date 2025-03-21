@@ -6,8 +6,10 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/sapperGame/',
   server: {
-    port: 3000, // Указываем порт 3000
+    port: 3000,
+    strictPort: false,
   },
   plugins: [
     vue(),

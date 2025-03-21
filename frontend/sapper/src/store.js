@@ -17,12 +17,17 @@ export const useUserStore = defineStore('user', {
       openedCages: [],
       timer: '',
       leaderBoard: [],
+      usernameError:null
     };
   },
 
   actions: {
     saveToLocalStorage() {
       localStorage.setItem('user', JSON.stringify(this.$state));
+    },
+    setUsernameError(value){
+      this.usernameError = value
+
     },
     setTimer(value){
       this.timer = value

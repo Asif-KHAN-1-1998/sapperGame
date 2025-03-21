@@ -1,6 +1,7 @@
 <template>
   <div class="settings">
-    <h1>Выберите уровень сложности {{ useStore.nickName }}</h1>
+    <h1 v-if="useStore.nickName">{{ useStore.nickName }}, выберите уровень сложности </h1>
+    <h1 v-else> Выберите уровень сложности </h1>
     <div class="difficulty-options">
       <button @click="useStore.setDifficulty('easy')" class="btn easy">
         Простой (8x8, 10 мин)
@@ -14,8 +15,10 @@
     </div>
     <div style="display: flex; flex-direction: column;">
       <p class="selected-level">Выбранный уровень: {{ useStore.difficulty }}</p>
-      <input value="username..." style="text-align: center;" class="selected-level" v-model="username">
-      <button @click="startGame()" class="start-game-btn">Начать игру</button>
+      <input placeholder="username..." style="text-align: center;" class="input-username" v-model="username">
+      <div style="color:red; margin-top: 1rem;" v-if="useStore.usernameError == true">Заполните поле username</div>
+      <button @click="startGame()" class="start-game-btn"> Начать игру</button>
+
     </div>
   </div>
 </template>
@@ -46,12 +49,17 @@
     }
   })
 
-  const startGame = () => { //Кнопка "Начать игру" устанавливает username и дает пометку что игра началаь + роутит на страницу игры
-  if (!username.value && !useStore.nickName) return;
+  const startGame = () => {
+  // Проверяем, что username или nickName не пустые
+  if (!username.value && !useStore.nickName) {
+    useStore.setUsernameError(true);
+    throw new Error('Имя пользователя не указано');
+  }
+  useStore.setUsernameError(false)
   useStore.setNickName(username.value || useStore.nickName);
   useStore.setGameStatus('gaming');
   router.push('/game');
-  gameTimer()
+  gameTimer();
 };
 
 const gameTimer = () => {
@@ -129,6 +137,10 @@ h1 {
 
 .selected-level {
   margin-top: 20px;
+  font-size: 18px;
+  color: #555;
+}
+.input-username {
   font-size: 18px;
   color: #555;
 }
