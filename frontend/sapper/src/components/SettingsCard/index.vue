@@ -22,27 +22,54 @@
 
 <script setup>
   import { useUserStore } from '../../store.js';
-  import { onMounted, ref } from 'vue';
+  import { onMounted, ref, computed } from 'vue';
   import { useRouter } from 'vue-router';
 
   const router = useRouter();
   const useStore = useUserStore();
   const username = ref('');
+
+  let timerId;
+  let delay = 1000;
+  let timeCounter = ref(0);
+  let hours = ref(0)
+  let minutes = ref(0)
+  let seconds = ref(0)
  
   onMounted(() => {
     if(!useStore.difficulty){
       useStore.setDifficulty('easy')
     }
-     //Устанавливаем default уровень сложности
-    console.log(localStorage);
   })
 
   const startGame = () => { //Кнопка "Начать игру" устанавливает username и дает пометку что игра началаь + роутит на страницу игры
   if (!username.value && !useStore.nickName) return;
-  useStore.setNickName(useStore.nickName || username.value);
+  useStore.setNickName(username.value || useStore.nickName);
   useStore.setGameStatus('gaming');
   router.push('/game');
+  gameTimer()
 };
+
+const gameTimer = () => {
+  const request = () => {
+  hours.value = Math.floor(timeCounter.value / 3600);
+  minutes.value = Math.floor((timeCounter.value % 3600) / 60);
+  seconds.value = Math.floor(timeCounter.value % 60);
+  useStore.setTimer(`${hours.value}:${ minutes.value }:${ seconds.value }`)
+  if (useStore.gameStatus === 'winner') {
+      useStore.setLeaderBoard(timeCounter, hours, minutes, seconds);
+      clearTimeout(timerId)
+      return
+      } else if (!useStore.gameStatus || useStore.gameStatus === 'lose') {
+        clearTimeout(timerId) 
+        return
+      };
+  timeCounter.value++;
+  timerId = setTimeout(request, delay);
+  }
+  timerId = setTimeout(request, delay);
+  
+}
 </script>
 
 <style scoped>

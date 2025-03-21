@@ -11,7 +11,7 @@
       <tbody>
         <tr v-for="(player, index) in useStore.leaderBoard" :key="index">
           <td>{{ player.nick }}</td>
-          <td>{{ player.time }}</td>
+          <td>{{ player.publicTime }}</td>
         </tr>
       </tbody>
     </table>
@@ -23,8 +23,8 @@ import { onMounted } from 'vue';
 import { useUserStore } from '../../store.js';
 const useStore = useUserStore()
 onMounted(() => {
+  console.log(useStore.leaderBoard)
 })
-// Пример данны
 </script>
 
 <style scoped>

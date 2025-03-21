@@ -2,25 +2,32 @@
   <div :class="getGameDifficulty()">
     <header class="game-header">
       <div class="controls">
-        <div class="timer">⏳ Время: {{hours}}:{{ minutes }}:{{ seconds }}</div>
-        <div class="flags-timeCounter">🚩 Флажки: 10 {{ useStore.gameStatus }}</div>
+        <div class="timer">Время: {{useStore.timer}}</div>
+        <div class="flags-timeCounter"> Флажки: {{(useStore.mines - flags)}}</div>
       </div>
       <div class="actions">
-        <button class="btn restart-btn" @click="restartGame()">🔄 Перезапуск</button>
-        <router-link to="/" class="btn settings-btn">⚙️ Настройки</router-link>
+        <button class="btn restart-btn" @click="restartGame()">Перезапуск</button>
+        <router-link to="/" class="btn settings-btn">Настройки</router-link>
       </div>
     </header>
     <main>
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div v-if="useStore.gameStatus == 'lose'" class="loser">
+        <div v-if="useStore.gameStatus === 'lose'" class="loser">
             LOSER
         </div>
-        <div v-if="useStore.gameStatus == 'winner'" class="loser">
+        <div v-if="useStore.gameStatus === 'winner'" class="loser">
             WINNER
         </div>
         <div v-for="(row, rowIndex) in Array(useStore.rows).fill(0)"  :style="{display: 'flex', flexDirection: 'row'}">
-          <div v-for="(cell, colIndex) in Array(useStore.columns).fill(0)" class="cell" @click="openCage(rowIndex, colIndex)" >
-            {{ checkPlace(rowIndex, colIndex) }}
+          <div v-for="(cell, colIndex) in Array(useStore.columns).fill(0)" class="cell" 
+            @click="openCage(rowIndex, colIndex)"
+            @contextmenu.prevent="handleRightClick(rowIndex, colIndex)">
+            <div v-if="checkValue(rowIndex, colIndex)" :style="{ color: selectColor(rowIndex, colIndex) }">
+              {{ checkBomb(rowIndex, colIndex) || checkDanger(rowIndex, colIndex) }}
+            </div>
+            <div v-if="checkFlag(rowIndex, colIndex)">
+              {{ checkFlag(rowIndex, colIndex) }}
+            </div>
           </div>
         </div>
       </div>
@@ -34,64 +41,69 @@
 
   const router = useRouter();
   const useStore = useUserStore();
-
-  let delay = 1000;
-  let timeCounter = ref(0);
-  let hours = ref(0)
-  let minutes = ref(0)
-  let seconds = ref(0)
+  const maxFlags = 10
 
   
   onMounted(() => {
-    // useStore.setBombs()
+    
   });
   const openedCages = computed(() => { //Отслеживаем количество открытых ячеек
-    const filteredCells = useStore.cells.filter(item => item.value === '0')
-    return filteredCells?.length
-  })
+      const filteredCells = useStore.cells.filter(item => item.value === '0')
+      return filteredCells?.length
+    })
 
-  let timerId = setTimeout(function request() { //Секундомер
-    hours.value = Math.floor(timeCounter.value / 3600);
-    minutes.value = Math.floor((timeCounter.value % 3600) / 60);
-    seconds.value = Math.floor(timeCounter.value % 60);
-    if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') {
-      if (useStore.gameStatus === 'winner') {
-        useStore.setTime(hours, minutes, seconds);
-        return
-      }
+  const openCage = (rowIndex, colIndex) => {
+    if (openedCages.value === 0) {useStore.setBombs(rowIndex, colIndex)}
+    if (openedCages.value >= useStore.cells.length - useStore.mines) {
+      useStore.setGameStatus('winner');
+    };
+    if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') return;
+    useStore.setPlaceValue(rowIndex, colIndex)
+    if (checkBomb(rowIndex, colIndex) === 'Bomb') {
+      useStore.setGameStatus('lose');
+      return;
+    }
+    useStore.setPlaceValue(rowIndex, colIndex);
+    if (checkDanger(rowIndex, colIndex) === 0){
+      const data = useStore.findAroundPlaces(rowIndex, colIndex)
+      data.forEach(item => {
+        useStore.setPlaceValue(item['row'], item['col'])
+      })
+    }
+  }
+  const flags = computed(() => {
+    const filteredCells = useStore.cells.filter(cell => cell.flag === 'flag')
+    return filteredCells?.length;
+  });
+
+  const handleRightClick = (rowIndex, colIndex) => {
+    if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') return;
+    console.log(flags.value, useStore.mines)
+    if (flags.value === useStore.mines){
+      useStore.deletePlaceFlag(rowIndex, colIndex)
       return
     }
-    timeCounter.value++;
-    timerId = setTimeout(request, delay);
-  }, delay);
-
-  const openCage = (rowIndex, colIndex) => { //Кликаем по клетке
-    if(useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') return 
-    useStore.setDangerPlace(rowIndex, colIndex)
-    if(openedCages.value == 10){
-      useStore.setGameStatus('winner')
-      }
- 
-  };
+    useStore.setPlaceFlag(rowIndex, colIndex)
+  }
+    
 
   const restartGame = () => {//перезапуск игры + очистка store, localStore
     useStore.cleanStore();
     router.push('/');
 }
 
-  const checkPlace = (rowIndex, colIndex) => { // выводим значения клеток
-    if (checkBomb(rowIndex, colIndex)){
-      useStore.setGameStatus('lose')
-      return checkBomb(rowIndex, colIndex)
-    } else {      
-      return checkDanger(rowIndex, colIndex)
-    }
-  }
-
   const checkBomb = (rowIndex, colIndex) =>  //Проверка есть ли бомба
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].bomb;
+
+  const checkValue = (rowIndex, colIndex) =>  //Проверка открыта ли
+    useStore.cells[useStore.findIndex(rowIndex, colIndex)].value;
+
+  const checkFlag = (rowIndex, colIndex) =>
+    useStore.cells[useStore.findIndex(rowIndex, colIndex)].flag;
+
   const checkDanger = (rowIndex, colIndex) => //Проверка коэффициента опасности
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].danger;
+    
 
   const getGameDifficulty = () => {//Установка стиля для контейнера
     switch (useStore.difficulty) {
@@ -103,6 +115,31 @@
         return 'game-container-hard'
     }
   };
+  const selectColor = (rowIndex, colIndex) => {
+  
+  if(checkBomb(rowIndex, colIndex)){
+    return ''
+  }
+  switch (checkDanger(rowIndex, colIndex)) {
+    case 1:
+      return 'blue';
+    case 2:
+      return 'green';
+    case 3:
+      return 'red';
+    case 4:
+      return '#002137';
+    case 5:
+      return 'brown';
+    case 6:
+      return '#30d5c8';
+    case 7:
+      return 'black'
+    case 8:
+      return 'white'
+    default: ''
+  }
+};
 
 </script>
 

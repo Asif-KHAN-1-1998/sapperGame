@@ -15,15 +15,17 @@ export const useUserStore = defineStore('user', {
       rows: 0,
       mines: 0,
       openedCages: [],
+      timer: '',
       leaderBoard: [],
-      
-      
     };
   },
 
   actions: {
     saveToLocalStorage() {
       localStorage.setItem('user', JSON.stringify(this.$state));
+    },
+    setTimer(value){
+      this.timer = value
     },
     setNickName(value){
       this.nickName = value
@@ -53,28 +55,29 @@ export const useUserStore = defineStore('user', {
        
     },
     initCells(boxes){
-      this.cells = Array(boxes).fill(null).map(() => ({ value: '', bomb: '', flag: '', danger: ''}))
+      this.cells = Array(boxes).fill(null).map(() => ({ value: '', bomb: '', flag: '', danger: '', zero: ''}))
     },
-    setBombs(){
-      const max = this.rows * this.columns
-      const uniqueIndex = new Set();
-      for (let i=0; i < this.mines; i++){
-        while(uniqueIndex.size < this.mines){
-          const randomIndex = Math.floor(Math.random() * max);
-          uniqueIndex.add(randomIndex);
+    setBombs(rowIndex, colIndex) {
+      const max = this.rows * this.columns;
+      const excludeIndex = rowIndex * this.columns + colIndex;
+      const bombIndexes = new Set();
+      while (bombIndexes.size < this.mines) {
+        const randomIndex = Math.floor(Math.random() * max);
+        if (randomIndex !== excludeIndex) {
+          bombIndexes.add(randomIndex);
         }
-        uniqueIndex.forEach(item => {
-          this.cells[item].bomb = 'BOMB'
-        })
       }
+      bombIndexes.forEach(index => {
+        this.cells[index].bomb = 'Bomb';
+      });
     },
 
     findIndex(rowIndex, colIndex){
       return(rowIndex * this.columns + colIndex)
     },
-
-    chekDanger(rowIndex, colIndex){
-      let counter = 0
+    
+    findAroundPlaces(rowIndex, colIndex){
+      let cagesList = []
       const dangerPlace = [
         { row: (rowIndex + 1), col: (colIndex - 1) },
         { row: (rowIndex + 1), col: (colIndex) },
@@ -87,40 +90,68 @@ export const useUserStore = defineStore('user', {
       ];
       const filteredDangerPlace = dangerPlace.filter(item => item.row >= 0 && item.row < this.rows && item.col >= 0 && item.col < this.columns);
       filteredDangerPlace.forEach(item => {
-        const data = this.findIndex(item['row'], item['col']);
-        if(this.cells[data]?.bomb){
-          counter++;
-        }
+        cagesList.push(item)
         })
-      const cage = this.findIndex(rowIndex, colIndex)
-      this.cells[cage].danger = counter
+      return cagesList
+
 
     },
-    
-    setDangerPlace(rowIndex, colIndex){
-      this.cells[this.findIndex(rowIndex, colIndex)].value = '0'
-      this.chekDanger(rowIndex, colIndex)
+    setDanger(rowIndex, colIndex){
+      let counter = 0
+      const data = this.findAroundPlaces(rowIndex, colIndex)
+      data.forEach(item => {
+        const cagesList = this.findIndex(item['row'], item['col']);
+        if(this.cells[cagesList]?.bomb){
+          counter++;
+          this.cells[cagesList].zero = 'true'
+        }})
+      const cage = this.findIndex(rowIndex, colIndex)
+      this.cells[cage].danger = counter
     },
-    setTime(hour, minute, second){
-      const time = (hour.value * 86400 + minute.value * 60 + second.value)
-      if (time > 0){
-        console.log(typeof(this.leaderBoard))
-        this.leaderBoard = [this.leaderBoard, { time: `${time}`, nick: `${this.nickName}` }];
-        this.leaderBoard = this.leaderBoard.filter(item => item !== undefined);
-        this.saveToLocalStorage
-        }  
+
+    
+    setPlaceValue(rowIndex, colIndex){
+      this.cells[this.findIndex(rowIndex, colIndex)].value = '0'
+      this.setDanger(rowIndex, colIndex)
+    },
+    setPlaceFlag(rowIndex, colIndex){
+      switch (this.cells[this.findIndex(rowIndex, colIndex)].flag){
+        case '':
+          this.cells[this.findIndex(rowIndex, colIndex)].flag = 'flag';
+          break
+        case 'flag':
+          this.cells[this.findIndex(rowIndex, colIndex)].flag = '?';
+          break
+        case '?':
+          this.cells[this.findIndex(rowIndex, colIndex)].flag = '';
+          break
+      }
+    },
+    deletePlaceFlag(rowIndex, colIndex){
+      this.cells[this.findIndex(rowIndex, colIndex)].flag = ''
+    },
+
+    setLeaderBoard(value, hours, minutes, seconds){
+      this.leaderBoard = [...this.leaderBoard, { time: `${value.value}`, nick: `${this.nickName}`, publicTime: `${hours.value}:${minutes.value}:${seconds.value}` }].sort((a, b) => a.time - b.time);
+      this.leaderBoard = [...this.leaderBoard].slice(0, 10)
+      this.saveToLocalStorage() 
     },
     cleanStore() {
-      // Очищаем состояние хранилища
+      const savedNickName = this.nickName;
+      const savedLeaderBoard = this.leaderBoard;
+    
       this.difficulty = '';
       this.cells = [];
       this.columns = 0;
       this.rows = 0;
       this.mines = 0;
       this.gameStatus = '';
-
-      // Очищаем localStorage
-      localStorage.removeItem('user'); // Удаляем данные из localStorage
-    },
+      this.openedCages = [];
+    
+      this.nickName = savedNickName;
+      this.leaderBoard = savedLeaderBoard;
+    
+      this.saveToLocalStorage();
+    }
   },
 });
