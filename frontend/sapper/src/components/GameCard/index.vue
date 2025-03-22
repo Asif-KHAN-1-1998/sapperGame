@@ -52,7 +52,14 @@
     return filteredCells?.length;
   });
 
+  const handleLose = () => {
+    useStore.bombIndexesState?.forEach(item => {
+    useStore.openBombs(item)
+    })
+  }
+
   const openCage = (rowIndex, colIndex) => {
+    console.log(useStore.bombIndexesState)
     if (openedCages.value === 0) {useStore.setBombs(rowIndex, colIndex)}
     if (openedCages.value >= useStore.cells.length - useStore.mines) {
       useStore.setGameStatus('winner');
@@ -61,6 +68,7 @@
     useStore.setPlaceValue(rowIndex, colIndex)
     if (checkBomb(rowIndex, colIndex) === 'Bomb') {
       useStore.setGameStatus('lose');
+      handleLose()
       return;
     }
 
@@ -78,7 +86,6 @@
 
   const handleRightClick = (rowIndex, colIndex) => {
     if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') return;
-    console.log(flags.value, useStore.mines)
     if (flags.value === useStore.mines){
       useStore.deletePlaceFlag(rowIndex, colIndex)
       return

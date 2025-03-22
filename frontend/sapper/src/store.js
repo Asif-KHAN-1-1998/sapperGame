@@ -18,6 +18,7 @@ export const useUserStore = defineStore('user', {
       timer: '',
       leaderBoard: [],
       usernameError:null,
+      bombIndexesState: []
     };
   },
 
@@ -29,7 +30,7 @@ export const useUserStore = defineStore('user', {
     setUsernameError(value){
       this.usernameError = value
     },
-    
+
     setTimer(value){
       this.timer = value
       
@@ -74,6 +75,7 @@ export const useUserStore = defineStore('user', {
           bombIndexes.add(randomIndex);
         }
       }
+      this.bombIndexesState = [...bombIndexes]
       bombIndexes.forEach(index => {
         this.cells[index].bomb = 'Bomb';
       });
@@ -120,6 +122,10 @@ export const useUserStore = defineStore('user', {
     setPlaceValue(rowIndex, colIndex){
       this.cells[this.findIndex(rowIndex, colIndex)].value = '0'
       this.setDanger(rowIndex, colIndex)
+    },
+
+    openBombs(index){
+      this.cells[index].value = '0'
     },
     setPlaceFlag(rowIndex, colIndex){
       switch (this.cells[this.findIndex(rowIndex, colIndex)].flag){
