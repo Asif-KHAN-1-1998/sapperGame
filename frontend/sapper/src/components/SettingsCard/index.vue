@@ -17,7 +17,8 @@
       <p class="selected-level">Выбранный уровень: {{ useStore.difficulty }}</p>
       <input placeholder="username..." style="text-align: center;" class="input-username" v-model="username">
       <div style="color:red; margin-top: 1rem;" v-if="useStore.usernameError == true">Заполните поле username</div>
-      <button @click="startGame()" class="start-game-btn"> Начать игру</button>
+      <router-link v-if="useStore.gameStatus === 'gaming'" to="/game" class="start-game-btn">Вернуться в игру</router-link>
+      <button v-else @click="() => {startGame(); gameTimer();}" class="start-game-btn"> Начать игру</button>
 
     </div>
   </div>
@@ -25,7 +26,7 @@
 
 <script setup>
   import { useUserStore } from '../../store.js';
-  import { onMounted, ref, computed } from 'vue';
+  import { ref} from 'vue';
   import { useRouter } from 'vue-router';
 
   const router = useRouter();
@@ -38,50 +39,52 @@
   let hours = ref(0)
   let minutes = ref(0)
   let seconds = ref(0)
- 
-  onMounted(() => {
-    if(!useStore.difficulty){
-      useStore.setDifficulty('easy')
-    }
-    if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'win') {
-      useStore.cleanStore();
-      useStore.setDifficulty('easy')
-    }
-  })
 
   const startGame = () => {
-  // Проверяем, что username или nickName не пустые
-  if (!username.value && !useStore.nickName) {
-    useStore.setUsernameError(true);
-    throw new Error('Имя пользователя не указано');
-  }
-  useStore.setUsernameError(false)
-  useStore.setNickName(username.value || useStore.nickName);
-  useStore.setGameStatus('gaming');
-  router.push('/game');
-  gameTimer();
+    // Проверяем, что username или nickName не пустые
+    if (!username.value && !useStore.nickName) {
+      useStore.setUsernameError(true);
+      throw new Error('Имя пользователя не указано');
+    }
+    if(!useStore.difficulty){
+        useStore.setDifficulty('easy')
+      }
+    useStore.setUsernameError(false)
+    useStore.setNickName(username.value || useStore.nickName);
+    useStore.setGameStatus('gaming');
+    router.push('/game');
+ 
 };
 
 const gameTimer = () => {
   const request = () => {
-  hours.value = Math.floor(timeCounter.value / 3600);
-  minutes.value = Math.floor((timeCounter.value % 3600) / 60);
-  seconds.value = Math.floor(timeCounter.value % 60);
-  useStore.setTimer(`${hours.value}:${ minutes.value }:${ seconds.value }`)
-  if (useStore.gameStatus === 'winner') {
-      useStore.setLeaderBoard(timeCounter, hours, minutes, seconds);
-      clearTimeout(timerId)
-      return
-      } else if (!useStore.gameStatus || useStore.gameStatus === 'lose') {
-        clearTimeout(timerId) 
-        return
-      };
-  timeCounter.value++;
+    hours.value = Math.floor(timeCounter.value / 3600);
+    minutes.value = Math.floor((timeCounter.value % 3600) / 60);
+    seconds.value = Math.floor(timeCounter.value % 60);
+    useStore.setTimer(`${hours.value}:${minutes.value}:${seconds.value}`);
+    if (useStore.gameStatus === 'winner') {
+      useStore.setLeaderBoard(timeCounter.value, hours.value, minutes.value, seconds.value);
+      resetTimer()
+      return;
+    } else if (!useStore.gameStatus || useStore.gameStatus === 'lose') {
+      resetTimer()
+      return;
+    }
+    timeCounter.value++;
+    timerId = setTimeout(request, delay);
+  };
   timerId = setTimeout(request, delay);
-  }
-  timerId = setTimeout(request, delay);
-  
-}
+};
+
+
+const resetTimer = () => {
+  clearTimeout(timerId); 
+  timeCounter.value = 0; 
+  hours.value = 0; 
+  minutes.value = 0;
+  seconds.value = 0;
+  useStore.setTimer('0:0:0');
+};
 </script>
 
 <style scoped>

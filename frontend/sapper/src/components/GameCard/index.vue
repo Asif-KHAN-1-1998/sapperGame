@@ -2,7 +2,7 @@
   <div :class="getGameDifficulty()">
     <header class="game-header">
       <div class="controls">
-        <div class="timer">Время: {{useStore.timer}}</div>
+        <div class="timer">Время: {{useStore.timer}} {{  }}</div>
         <div class="flags-timeCounter"> Флажки: {{(useStore.mines - flags)}}</div>
       </div>
       <div class="actions">
@@ -36,21 +36,21 @@
 </template>
 <script setup>
   import { useUserStore } from '../../store.js';
-  import { ref, onMounted, computed } from 'vue';
+  import { computed } from 'vue';
   import { useRouter } from 'vue-router';
 
   const router = useRouter();
   const useStore = useUserStore();
-  const maxFlags = 10
 
-  
-  onMounted(() => {
-    
-  });
-  const openedCages = computed(() => { //Отслеживаем количество открытых ячеек
+
+  const openedCages = computed(() => {
       const filteredCells = useStore.cells.filter(item => item.value === '0')
       return filteredCells?.length
     })
+  const flags = computed(() => {
+    const filteredCells = useStore.cells.filter(cell => cell.flag === 'flag')
+    return filteredCells?.length;
+  });
 
   const openCage = (rowIndex, colIndex) => {
     if (openedCages.value === 0) {useStore.setBombs(rowIndex, colIndex)}
@@ -63,7 +63,9 @@
       useStore.setGameStatus('lose');
       return;
     }
+
     useStore.setPlaceValue(rowIndex, colIndex);
+
     if (checkDanger(rowIndex, colIndex) === 0){
       const data = useStore.findAroundPlaces(rowIndex, colIndex)
       data.forEach(item => {
@@ -71,10 +73,8 @@
       })
     }
   }
-  const flags = computed(() => {
-    const filteredCells = useStore.cells.filter(cell => cell.flag === 'flag')
-    return filteredCells?.length;
-  });
+
+ 
 
   const handleRightClick = (rowIndex, colIndex) => {
     if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') return;
@@ -87,25 +87,25 @@
   }
     
 
-  const restartGame = () => {//перезапуск игры + очистка store, localStore
+  const restartGame = () => {
     useStore.cleanStore();
     router.push('/');
 }
 
-  const checkBomb = (rowIndex, colIndex) =>  //Проверка есть ли бомба
+  const checkBomb = (rowIndex, colIndex) =>
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].bomb;
 
-  const checkValue = (rowIndex, colIndex) =>  //Проверка открыта ли
+  const checkValue = (rowIndex, colIndex) =>
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].value;
 
   const checkFlag = (rowIndex, colIndex) =>
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].flag;
 
-  const checkDanger = (rowIndex, colIndex) => //Проверка коэффициента опасности
+  const checkDanger = (rowIndex, colIndex) =>
     useStore.cells[useStore.findIndex(rowIndex, colIndex)].danger;
     
 
-  const getGameDifficulty = () => {//Установка стиля для контейнера
+  const getGameDifficulty = () => {
     switch (useStore.difficulty) {
       case 'easy':
         return 'game-container-easy-medium'
@@ -144,7 +144,7 @@
 </script>
 
 <style scoped>
-/* Общие стили */
+
 .game-container-easy-medium {
   font-family: Arial, sans-serif;
   text-align: center;
@@ -207,7 +207,6 @@
   transform: scale(1.05);
 }
 
-/* Игровое поле */
 .game-board {
   display: flex;
   justify-content: center;
@@ -226,7 +225,6 @@
   background-color: #d1d1d1;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: repeat(8, 30px);

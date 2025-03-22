@@ -14,10 +14,10 @@ export const useUserStore = defineStore('user', {
       columns: 0,
       rows: 0,
       mines: 0,
-      openedCages: [],
+      openedCages: [], 
       timer: '',
       leaderBoard: [],
-      usernameError:null
+      usernameError:null,
     };
   },
 
@@ -25,12 +25,14 @@ export const useUserStore = defineStore('user', {
     saveToLocalStorage() {
       localStorage.setItem('user', JSON.stringify(this.$state));
     },
+
     setUsernameError(value){
       this.usernameError = value
-
     },
+    
     setTimer(value){
       this.timer = value
+      
     },
     setNickName(value){
       this.nickName = value
