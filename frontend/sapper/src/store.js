@@ -15,7 +15,7 @@ export const useUserStore = defineStore('user', {
       rows: 0,
       mines: 0,
       openedCages: [], 
-      timer: '',
+      timer: 0,
       leaderBoard: [],
       usernameError:null,
       bombIndexesState: []

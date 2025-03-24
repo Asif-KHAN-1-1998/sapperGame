@@ -2,8 +2,8 @@
   <div :class="getGameDifficulty()">
     <header class="game-header">
       <div class="controls">
-        <div class="timer">Время: {{useStore.timer}} {{  }}</div>
-        <div class="flags-timeCounter"> Флажки: {{(useStore.mines - flags)}}</div>
+        <div  class="timer">Время: {{ timerPanel || '0:0:0' }}</div>
+        <div class="flags-counter">Флажки: {{ useStore.mines - flags }}</div>
       </div>
       <div class="actions">
         <button class="btn restart-btn" @click="restartGame()">Перезапуск</button>
@@ -11,18 +11,18 @@
       </div>
     </header>
     <main>
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div v-if="useStore.gameStatus === 'lose'" class="loser">
-            LOSER
-        </div>
-        <div v-if="useStore.gameStatus === 'winner'" class="loser">
-            WINNER
-        </div>
-        <div v-for="(row, rowIndex) in Array(useStore.rows).fill(0)"  :style="{display: 'flex', flexDirection: 'row'}">
-          <div v-for="(cell, colIndex) in Array(useStore.columns).fill(0)" class="cell" 
+      <div class="game-board-container">
+        <div v-if="useStore.gameStatus === 'lose'" class="loser">LOSER</div>
+        <div v-if="useStore.gameStatus === 'winner'" class="winner">WINNER</div>
+        <div v-for="(row, rowIndex) in Array(useStore.rows).fill(0)" :key="rowIndex" class="row">
+          <div
+            v-for="(cell, colIndex) in Array(useStore.columns).fill(0)"
+            :key="colIndex"
+            class="cell"
             @click="() => openCage(rowIndex, colIndex)"
-            @contextmenu.prevent="handleRightClick(rowIndex, colIndex)">
-            <div v-if="checkValue(rowIndex, colIndex)" :style="{ color: selectColor(rowIndex, colIndex) }">
+            @contextmenu.prevent="handleRightClick(rowIndex, colIndex)"
+          >
+            <div v-if="checkValue(rowIndex, colIndex)" :class="selectColor(rowIndex, colIndex)">
               {{ checkBomb(rowIndex, colIndex) || checkDanger(rowIndex, colIndex) }}
             </div>
             <div v-if="checkFlag(rowIndex, colIndex)">
@@ -34,23 +34,40 @@
     </main>
   </div>
 </template>
+
 <script setup>
   import { useUserStore } from '../../store.js';
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { useRouter } from 'vue-router';
 
   const router = useRouter();
   const useStore = useUserStore();
+  let hours = ref(0)
+  let minutes = ref(0)
+  let seconds = ref(0)
 
 
   const openedCages = computed(() => {
       const filteredCells = useStore.cells.filter(item => item.value === '0')
       return filteredCells?.length
     })
+
   const flags = computed(() => {
     const filteredCells = useStore.cells.filter(cell => cell.flag === 'flag')
     return filteredCells?.length;
   });
+    
+  const timerPanel = computed(() => {
+    if (useStore.timer) {
+      hours.value = Math.floor(useStore.timer / 3600) || 0;
+      minutes.value = Math.floor((useStore.timer % 3600) / 60) || 0;
+      seconds.value = Math.floor(useStore.timer % 60) || 0;
+      // useStore.setTimer(`${hours.value}:${minutes.value}:${seconds.value}`);
+    return `${hours.value}:${minutes.value}:${seconds.value}`
+    } else console.log('timer is empty')
+    
+  })
+
 
   const handleLose = () => {
     useStore.bombIndexesState?.forEach(item => {
@@ -71,9 +88,7 @@
       handleLose()
       return;
     }
-
     useStore.setPlaceValue(rowIndex, colIndex);
-
     if (checkDanger(rowIndex, colIndex) === 0){
       const data = useStore.findAroundPlaces(rowIndex, colIndex)
       data.forEach(item => {
@@ -81,8 +96,6 @@
       })
     }
   }
-
- 
 
   const handleRightClick = (rowIndex, colIndex) => {
     if (useStore.gameStatus === 'lose' || useStore.gameStatus === 'winner') return;
@@ -122,8 +135,8 @@
         return 'game-container-hard'
     }
   };
+
   const selectColor = (rowIndex, colIndex) => {
-  
   if(checkBomb(rowIndex, colIndex)){
     return ''
   }
@@ -151,13 +164,14 @@
 </script>
 
 <style scoped>
-
+/* Общие стили */
 .game-container-easy-medium {
   font-family: Arial, sans-serif;
   text-align: center;
   padding: 20px;
   background-color: #f9f9f9;
 }
+
 .game-container-hard {
   font-family: Arial, sans-serif;
   text-align: center;
@@ -214,9 +228,16 @@
   transform: scale(1.05);
 }
 
-.game-board {
+.game-board-container {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
 }
 
 .cell {
@@ -226,26 +247,71 @@
   border: 1px solid #ccc;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
 }
 
 .cell:hover {
   background-color: #d1d1d1;
 }
 
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(8, 30px);
-    grid-template-rows: repeat(8, 30px);
-  }
+.loser,
+.winner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 50px;
+  font-weight: bold;
+}
 
+.loser {
+  color: red;
+}
+
+.winner {
+  color: green;
+}
+
+/* Цвета для клеток с числами */
+.blue {
+  color: blue;
+}
+
+.green {
+  color: green;
+}
+
+.red {
+  color: red;
+}
+
+.dark-blue {
+  color: #002137;
+}
+
+.brown {
+  color: brown;
+}
+
+.cyan {
+  color: #30d5c8;
+}
+
+.black {
+  color: black;
+}
+
+.white {
+  color: white;
+}
+
+@media (max-width: 768px) {
   .cell {
     width: 30px;
     height: 30px;
   }
-}
-.loser {
-  position: fixed;
-    color: red;
-    font-size: 50px;
 }
 </style>

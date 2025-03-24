@@ -13,20 +13,19 @@
         Сложный (32x16, 100 мин)
       </button>
     </div>
-    <div style="display: flex; flex-direction: column;">
+    <div class="input-container">
       <p class="selected-level">Выбранный уровень: {{ useStore.difficulty }}</p>
-      <input placeholder="username..." style="text-align: center;" class="input-username" v-model="username">
-      <div style="color:red; margin-top: 1rem;" v-if="useStore.usernameError == true">Заполните поле username</div>
+      <input placeholder="username..." class="input-username" v-model="username">
+      <div v-if="useStore.usernameError == true" class="error-message">Заполните поле username</div>
       <router-link v-if="useStore.gameStatus === 'gaming'" to="/game" class="start-game-btn">Вернуться в игру</router-link>
       <button v-else @click="() => {startGame(); gameTimer();}" class="start-game-btn"> Начать игру</button>
-
     </div>
   </div>
 </template>
 
 <script setup>
   import { useUserStore } from '../../store.js';
-  import { ref} from 'vue';
+  import { ref } from 'vue';
   import { useRouter } from 'vue-router';
 
   const router = useRouter();
@@ -36,9 +35,8 @@
   let timerId;
   let delay = 1000;
   let timeCounter = ref(0);
-  let hours = ref(0)
-  let minutes = ref(0)
-  let seconds = ref(0)
+  
+    
 
   const startGame = () => {
     if (!username.value && !useStore.nickName) {
@@ -57,10 +55,6 @@
 
 const gameTimer = () => {
   const request = () => {
-    hours.value = Math.floor(timeCounter.value / 3600);
-    minutes.value = Math.floor((timeCounter.value % 3600) / 60);
-    seconds.value = Math.floor(timeCounter.value % 60);
-    useStore.setTimer(`${hours.value}:${minutes.value}:${seconds.value}`);
     if (useStore.gameStatus === 'winner') {
       useStore.setLeaderBoard(timeCounter.value, hours.value, minutes.value, seconds.value);
       resetTimer()
@@ -70,6 +64,7 @@ const gameTimer = () => {
       return;
     }
     timeCounter.value++;
+    useStore.setTimer(timeCounter.value)
     timerId = setTimeout(request, delay);
   };
   timerId = setTimeout(request, delay);
@@ -142,13 +137,30 @@ h1 {
   font-size: 18px;
   color: #555;
 }
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .input-username {
+  margin-top: 10px;
+  padding: 10px;
   font-size: 18px;
   color: #555;
+  text-align: center;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.error-message {
+  color: red;
+  margin-top: 1rem;
 }
 
 .start-game-btn {
-  display: inline-block;
   margin-top: 20px;
   padding: 10px 20px;
   font-size: 16px;
