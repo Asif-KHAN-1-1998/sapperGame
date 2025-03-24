@@ -20,7 +20,6 @@ const useStore = useUserStore();
 </template>
 
 <style scoped>
-/* Общие стили */
 .app-header {
   background-color: #2c3e50;
   color: white;
@@ -61,7 +60,7 @@ const useStore = useUserStore();
   margin-top: 0.5rem;
 }
 
-/* Основной контент */
+
 .app-main {
   padding: 2rem;
   max-width: 1200px;
@@ -75,7 +74,6 @@ const useStore = useUserStore();
   margin-bottom: 1.5rem;
 }
 
-/* Адаптивность */
 @media (min-width: 768px) {
   .navigation {
     gap: 1.5rem;

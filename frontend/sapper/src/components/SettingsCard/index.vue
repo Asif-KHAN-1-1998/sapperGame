@@ -41,7 +41,6 @@
   let seconds = ref(0)
 
   const startGame = () => {
-    // Проверяем, что username или nickName не пустые
     if (!username.value && !useStore.nickName) {
       useStore.setUsernameError(true);
       throw new Error('Имя пользователя не указано');
@@ -127,15 +126,15 @@ h1 {
 }
 
 .easy {
-  background-color: #4caf50; /* Зеленый */
+  background-color: #4caf50;
 }
 
 .medium {
-  background-color: #ff9800; /* Оранжевый */
+  background-color: #ff9800;
 }
 
 .hard {
-  background-color: #f44336; /* Красный */
+  background-color: #f44336;
 }
 
 .selected-level {
@@ -154,7 +153,7 @@ h1 {
   padding: 10px 20px;
   font-size: 16px;
   color: white;
-  background-color: #007bff; /* Синий */
+  background-color: #007bff;
   text-decoration: none;
   border-radius: 5px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
