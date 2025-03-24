@@ -77,7 +77,6 @@ const resetTimer = () => {
   hours.value = 0; 
   minutes.value = 0;
   seconds.value = 0;
-  useStore.setTimer('0:0:0');
 };
 </script>
 

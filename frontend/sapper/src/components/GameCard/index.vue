@@ -62,7 +62,6 @@
       hours.value = Math.floor(useStore.timer / 3600) || 0;
       minutes.value = Math.floor((useStore.timer % 3600) / 60) || 0;
       seconds.value = Math.floor(useStore.timer % 60) || 0;
-      // useStore.setTimer(`${hours.value}:${minutes.value}:${seconds.value}`);
     return `${hours.value}:${minutes.value}:${seconds.value}`
     } else console.log('timer is empty')
     
@@ -108,6 +107,7 @@
     
 
   const restartGame = () => {
+    useStore.setGameStatus('lose');
     useStore.cleanStore();
     router.push('/');
 }

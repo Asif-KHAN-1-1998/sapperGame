@@ -33,8 +33,8 @@ export const useUserStore = defineStore('user', {
 
     setTimer(value){
       this.timer = value
-      
     },
+
     setNickName(value){
       this.nickName = value
     },
@@ -160,6 +160,7 @@ export const useUserStore = defineStore('user', {
       this.mines = 0;
       this.gameStatus = '';
       this.openedCages = [];
+      this.timer = 0
     
       this.nickName = savedNickName;
       this.leaderBoard = savedLeaderBoard;
