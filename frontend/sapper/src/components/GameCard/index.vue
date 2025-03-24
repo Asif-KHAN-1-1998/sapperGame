@@ -20,7 +20,7 @@
         </div>
         <div v-for="(row, rowIndex) in Array(useStore.rows).fill(0)"  :style="{display: 'flex', flexDirection: 'row'}">
           <div v-for="(cell, colIndex) in Array(useStore.columns).fill(0)" class="cell" 
-            @click="openCage(rowIndex, colIndex)"
+            @click="() => openCage(rowIndex, colIndex)"
             @contextmenu.prevent="handleRightClick(rowIndex, colIndex)">
             <div v-if="checkValue(rowIndex, colIndex)" :style="{ color: selectColor(rowIndex, colIndex) }">
               {{ checkBomb(rowIndex, colIndex) || checkDanger(rowIndex, colIndex) }}
