@@ -11,7 +11,7 @@
       <tbody>
         <tr v-for="(player, index) in useStore.leaderBoard" :key="index">
           <td>{{ player.nick }}</td>
-          <td>{{ player.publicTime }}</td>
+          <td>{{ player.time }}</td>
         </tr>
       </tbody>
     </table>

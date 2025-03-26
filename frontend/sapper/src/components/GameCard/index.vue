@@ -11,7 +11,7 @@
             v-for="(cell, colIndex) in Array(useStore.columns).fill(0)"
             :key="colIndex"
             class="cell"
-            @click="() => openCage(rowIndex, colIndex)"
+            @click="() => {openCage(rowIndex, colIndex),  checkWinner()}"
             @contextmenu.prevent="handleRightClick(rowIndex, colIndex)"
           >
             <div :style="{color: selectColor(rowIndex, colIndex)}">
@@ -41,11 +41,14 @@
     })
   }
 
-  const openCage = (rowIndex, colIndex) => {
-    if (useStore.getOpenedCages === 0) {useStore.setBombs(rowIndex, colIndex)}
-    if (useStore.getOpenedCages >= useStore.cells.length - useStore.mines) {
+  const checkWinner = () => {
+    if (useStore.getOpenedCages >= (useStore.cells.length - useStore.mines)) {
       useStore.setGameStatus('winner');
     };
+    return
+  }
+  const openCage = (rowIndex, colIndex) => {
+    if (useStore.getOpenedCages === 0) {useStore.setBombs(rowIndex, colIndex)}
     if (useStore.gameStatus === 'loser' || useStore.gameStatus === 'winner') return;
     useStore.setPlaceValue(rowIndex, colIndex)
     if (checkValue(rowIndex, colIndex).bomb) {

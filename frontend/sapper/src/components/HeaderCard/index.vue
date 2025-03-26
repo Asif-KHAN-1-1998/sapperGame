@@ -29,6 +29,7 @@ const restartGame = () => {
 }
 
 const timerPanel = computed(() => {
+    console.log(useStore.gameStatus)
     if (useStore.timer) {
       hours.value = Math.floor(useStore.timer / 3600) || 0;
       minutes.value = Math.floor((useStore.timer % 3600) / 60) || 0;

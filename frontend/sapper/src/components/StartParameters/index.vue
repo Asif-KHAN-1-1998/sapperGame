@@ -39,7 +39,7 @@
   const gameTimer = () => {
     const request = () => {
       if (useStore.gameStatus === 'winner') {
-        useStore.setLeaderBoard(timeCounter.value, hours.value, minutes.value, seconds.value);
+        useStore.setLeaderBoard(timeCounter.value);
         resetTimer()
         return;
       } else if (!useStore.gameStatus || useStore.gameStatus === 'loser') {

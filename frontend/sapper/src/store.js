@@ -152,8 +152,8 @@ export const useUserStore = defineStore('user', {
       this.cells[this.findIndex(rowIndex, colIndex)].flag = ''
     },
 
-    setLeaderBoard(value, hours, minutes, seconds){
-      this.leaderBoard = [...this.leaderBoard, { time: `${value.value}`, nick: `${this.nickName}`, publicTime: `${hours.value}:${minutes.value}:${seconds.value}` }].sort((a, b) => a.time - b.time);
+    setLeaderBoard(value){
+      this.leaderBoard = [...this.leaderBoard, { time: `${value}`, nick: `${this.nickName}`, publicTime: `not` }].sort((a, b) => a.time - b.time);
       this.leaderBoard = [...this.leaderBoard].slice(0, 10)
       this.saveToLocalStorage() 
     },
@@ -171,7 +171,7 @@ export const useUserStore = defineStore('user', {
       this.timer = 0
     
       this.nickName = savedNickName;
-      this.leaderBoard = savedLeaderBoard;
+      this.leaderBoard = '';
     
       this.saveToLocalStorage();
     }
