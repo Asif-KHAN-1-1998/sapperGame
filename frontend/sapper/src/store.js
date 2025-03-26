@@ -21,6 +21,14 @@ export const useUserStore = defineStore('user', {
       bombIndexesState: []
     };
   },
+  getters:{ 
+    getOpenedCages(){
+      return this.cells.filter(item => item.value === '0').length
+    },
+    getFlags(){
+      return this.cells.filter(cell => cell.flag === 'flag').length
+    }
+  },
 
   actions: {
     saveToLocalStorage() {
@@ -77,7 +85,7 @@ export const useUserStore = defineStore('user', {
       }
       this.bombIndexesState = [...bombIndexes]
       bombIndexes.forEach(index => {
-        this.cells[index].bomb = 'Bomb';
+        this.cells[index].bomb = '💣';
       });
     },
 
@@ -130,12 +138,12 @@ export const useUserStore = defineStore('user', {
     setPlaceFlag(rowIndex, colIndex){
       switch (this.cells[this.findIndex(rowIndex, colIndex)].flag){
         case '':
-          this.cells[this.findIndex(rowIndex, colIndex)].flag = 'flag';
+          this.cells[this.findIndex(rowIndex, colIndex)].flag = '🚩';
           break
-        case 'flag':
-          this.cells[this.findIndex(rowIndex, colIndex)].flag = '?';
+        case '🚩':
+          this.cells[this.findIndex(rowIndex, colIndex)].flag = '❓';
           break
-        case '?':
+        case '❓':
           this.cells[this.findIndex(rowIndex, colIndex)].flag = '';
           break
       }
