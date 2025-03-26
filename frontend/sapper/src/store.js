@@ -26,7 +26,7 @@ export const useUserStore = defineStore('user', {
       return this.cells.filter(item => item.value === '0').length
     },
     getFlags(){
-      return this.cells.filter(cell => cell.flag === 'flag').length
+      return this.cells.filter(cell => cell.flag === '🚩').length
     }
   },
 
