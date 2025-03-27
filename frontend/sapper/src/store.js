@@ -171,7 +171,7 @@ export const useUserStore = defineStore('user', {
       this.timer = 0
     
       this.nickName = savedNickName;
-      this.leaderBoard = '';
+      this.leaderBoard = savedLeaderBoard;
     
       this.saveToLocalStorage();
     }
