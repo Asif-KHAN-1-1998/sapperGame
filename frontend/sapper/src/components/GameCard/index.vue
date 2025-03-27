@@ -98,11 +98,11 @@
       case 3:
         return 'red';
       case 4:
-        return '#002137';
+        return 'darkblue';
       case 5:
         return 'brown';
       case 6:
-        return '#30d5c8';
+        return 'cyan';
       case 7:
         return 'black'
       case 8:
